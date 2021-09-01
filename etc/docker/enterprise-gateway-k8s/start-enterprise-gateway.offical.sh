@@ -47,5 +47,9 @@ exec jupyter enterprisegateway \
 	--RemoteMappingKernelManager.cull_idle_timeout=${EG_CULL_IDLE_TIMEOUT} \
 	--RemoteMappingKernelManager.cull_interval=${EG_CULL_INTERVAL} \
 	--RemoteMappingKernelManager.cull_connected=${EG_CULL_CONNECTED} \
+<<<<<<< HEAD:etc/docker/enterprise-gateway/start-enterprise-gateway.sh
 	--RemoteMappingKernelManager.default_kernel_name=${EG_DEFAULT_KERNEL_NAME} \
 	--RemoteMappingKernelManager.kernel_info_timeout=${EG_KERNEL_INFO_TIMEOUT}
+=======
+	--RemoteMappingKernelManager.default_kernel_name=${EG_DEFAULT_KERNEL_NAME}
+>>>>>>> 6d25ce9 (feat: Add Kubeflow launcher):etc/docker/enterprise-gateway-k8s/start-enterprise-gateway.sh

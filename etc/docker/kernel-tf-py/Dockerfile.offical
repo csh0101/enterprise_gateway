@@ -1,4 +1,6 @@
-FROM jupyter/scipy-notebook:python-3.9.7
+# Ubuntu:Bionic
+# TensorFlow 2.4.0
+ARG BASE_CONTAINER=jupyter/tensorflow-notebook:2023-10-20
 
 # Fix DL4006
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]

@@ -94,7 +94,7 @@ kernel_image_files: ../build/kernel_image_files
 	rm -f $(KERNEL_IMAGE_FILE)
 	@( cd ../build/kernel_image_files; tar -pvczf "../$(KERNEL_IMAGE_FILE)" . )
 
-../build/kernel_image_files: kernel-launchers/scala/lib kernel-launchers/bootstrap/bootstrap-kernel.sh
+../build/kernel_image_files: kernel-launchers/bootstrap/bootstrap-kernel.sh
 	@rm -rf ../build/kernel_image_files
 	@mkdir -p ../build/kernel_image_files/kernel-launchers
 	cp kernel-launchers/bootstrap/* ../build/kernel_image_files
@@ -120,7 +120,7 @@ clean-kernel-images: clean-kernel-py clean-kernel-spark-py clean-kernel-tf-py cl
 # Extra dependencies for each docker image...
 DEPENDS_demo-base:
 DEPENDS_enterprise-gateway-demo: $(FILE_kernelspecs_all)
-DEPENDS_enterprise-gateway: $(FILE_kernelspecs_all)
+DEPENDS_enterprise-gateway:
 DEPENDS_kernel-image-puller:
 DEPENDS_kernel-py DEPENDS_kernel-spark-py DEPENDS_kernel-r DEPENDS_kernel-spark-r DEPENDS_kernel-scala DEPENDS_kernel-tf-py DEPENDS_kernel-tf-gpu-py: $(FILE_kernelspecs_kubernetes) $(FILE_kernelspecs_docker)
 

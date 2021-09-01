@@ -1,5 +1,4 @@
-# Build the elastic-jupyter-operator binary
-FROM golang:1.17.6-alpine as builder
+ARG BASE_CONTAINER=jupyter/minimal-notebook:2023-03-13
 
 WORKDIR /workspace
 # Copy the Go Modules manifests
@@ -10,17 +9,19 @@ COPY go.sum go.sum
 RUN go mod download
 RUN go mod verify
 
-# Copy the go source
-COPY cli/ cli/
-COPY api/ api/
+ENV SPARK_VER $SPARK_VERSION
+ENV SPARK_HOME /opt/spark
 
-# Build
-RUN CGO_ENABLED=0 go build -a -o kubeflow-launcher cli/main.go
 
-# Build the enterprise_gateway
-FROM python:3.9.9-slim-bullseye
-
-LABEL org.opencontainers.image.source https://github.com/skai-x/enterprise_gateway
+RUN mamba install --quiet --yes \
+    cffi \
+    send2trash \
+    requests \
+    future \
+    pycryptodomex && \
+    conda clean --all && \
+    fix-permissions $CONDA_DIR && \
+    fix-permissions /home/$NB_USER
 
 USER root
 
@@ -32,9 +33,20 @@ USER root
 COPY --from=builder /workspace/kubeflow-launcher /usr/local/bin/
 COPY enterprise_gateway/etc/docker/enterprise-gateway/start-enterprise-gateway.sh /usr/local/bin/
 
-ARG NB_USER="jovyan"
-ARG NB_UID="1000"
-RUN useradd -l -m -s /bin/bash -N -u "${NB_UID}" "${NB_USER}"
+ENV JAVA_HOME /usr/lib/jvm/java
+RUN ln -s $(readlink -f /usr/bin/javac | sed "s:/bin/javac::") ${JAVA_HOME}
+
+# Download and install Spark
+RUN curl -s https://archive.apache.org/dist/spark/spark-${SPARK_VER}/spark-${SPARK_VER}-bin-hadoop2.7.tgz | \
+    tar -xz -C /opt && \
+    ln -s ${SPARK_HOME}-${SPARK_VER}-bin-hadoop2.7 $SPARK_HOME && \
+    mkdir -p /usr/hdp/current && \
+    ln -s ${SPARK_HOME}-${SPARK_VER}-bin-hadoop2.7 /usr/hdp/current/spark2-client
+
+# Install Enterprise Gateway wheel and kernelspecs
+COPY jupyter_enterprise_gateway*.whl /tmp/
+RUN pip install /tmp/jupyter_enterprise_gateway*.whl && \
+	rm -f /tmp/jupyter_enterprise_gateway*.whl
 
 RUN mkdir -p /usr/local/share/jupyter && \
     chown jovyan:users /usr/local/bin/start-enterprise-gateway.sh && \
@@ -43,11 +55,6 @@ RUN mkdir -p /usr/local/share/jupyter && \
 	chown -R jovyan:users /usr/local/share/jupyter /usr/local/bin/kubeflow-launcher && \
 	chmod 0666 /usr/local/share/jupyter/enterprise-gateway.log && \
 	rm -f /usr/local/bin/bootstrap-kernel.sh
-
-# Install Enterprise Gateway wheel and kernelspecs
-COPY enterprise_gateway/dist/jupyter_enterprise_gateway*.whl /tmp/
-RUN pip install /tmp/jupyter_enterprise_gateway*.whl && \
-	rm -f /tmp/jupyter_enterprise_gateway*.whl
 
 USER jovyan
 

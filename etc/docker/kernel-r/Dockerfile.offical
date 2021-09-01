@@ -1,23 +1,23 @@
 # Ubuntu 18.04.1 LTS Bionic
-ARG BASE_CONTAINER=jupyter/scipy-notebook:python-3.9.7
+ARG BASE_CONTAINER=jupyter/r-notebook:2023-03-13
 FROM $BASE_CONTAINER
 
 ENV PATH=$PATH:$CONDA_DIR/bin
 
-# Add debugger support
-RUN pip install --upgrade ipykernel
-
 RUN conda install --quiet --yes \
-    cffi \
-    future \
+    'r-argparse' \
     pycryptodomex && \
     conda clean --all && \
-    fix-permissions $CONDA_DIR && \
-    fix-permissions /home/jovyan
+    fix-permissions $CONDA_DIR
 
+ADD jupyter_enterprise_gateway_kernel_image_files*.tar.gz /usr/local/bin/
+
+# Switch back to root to modify ownerships
 USER root
 
-RUN apt-get update && apt-get install -yq --no-install-recommends \
+RUN apt-get update && apt-get install -y \
+    less \
+    curl \
     libkrb5-dev \
     && rm -rf /var/lib/apt/lists/*
 
@@ -30,7 +30,7 @@ RUN chown jovyan:users /usr/local/bin/bootstrap-kernel.sh && \
 
 USER jovyan
 
-ENV KERNEL_LANGUAGE python
+ENV KERNEL_LANGUAGE R
 
 # Disble healthcheck inherited from notebook image
 HEALTHCHECK NONE
