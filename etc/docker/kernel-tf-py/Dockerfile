@@ -1,8 +1,13 @@
-# Ubuntu:Bionic
-# TensorFlow 2.4.0
-ARG BASE_CONTAINER=jupyter/tensorflow-notebook:703d8b2dcb88
+FROM jupyter/scipy-notebook:python-3.9.7
 
-FROM $BASE_CONTAINER
+# Fix DL4006
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+
+RUN if [[ `uname -m` == "aarch64" ]] ; then \
+       pip install tensorflow -f https://tf.kmtea.eu/whl/stable.html ; \
+    else \
+       pip install tensorflow ; \
+    fi
 
 ENV KERNEL_LANGUAGE python
 
