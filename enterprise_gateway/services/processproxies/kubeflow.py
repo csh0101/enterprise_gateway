@@ -92,7 +92,7 @@ class KubeflowProcessProxy(KubernetesProcessProxy):
             else:
                 # TODO(gaocegege): Check the response
                 api_response = client.CustomObjectsApi().delete_namespaced_custom_object(
-                    group='kubeflow.tkestack.io',
+                    group='jupyter.drobotics.io',
                     version='v1alpha1',
                     plural='jupyterkernels',
                     namespace=self.kernel_namespace, body=body,
